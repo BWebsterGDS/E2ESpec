@@ -36,24 +36,24 @@ The walkthrough is split into **three charts** (PDF-friendly; one giant chart + 
 ### Chart 1 — Extract, classify, clean
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
+%%{init: {'theme': 'neutral', 'flowchart': {'nodeSpacing': 50, 'rankSpacing': 62, 'padding': 22}}}%%
 flowchart TB
-    SF[(Salesforce — read-only)]
-    subgraph P1[Phase 1 — Extract]
-        E1[Bulk API jobs + CSV stream]
-        E2[delegates.ingestion_rows — JSONB]
-        E3[delegates.ingestion_batches]
+    SF[(Salesforce<br/>read-only)]
+    subgraph P1["Phase 1 — Extract"]
+        E1[Bulk API jobs<br/>CSV stream]
+        E2[ingestion_rows<br/>JSONB]
+        E3[ingestion_batches]
         E1 --> E2 --> E3
     end
-    subgraph P2[Phase 2 — Classify]
-        C1[Score + fingerprint → tier tables]
-        C2[Rebuild delegates.contacts_working]
+    subgraph P2["Phase 2 — Classify"]
+        C1[Score + fingerprint<br/>tier tables]
+        C2[Rebuild contacts_working]
         C1 --> C2
     end
-    subgraph P3[Phase 3 — Clean]
+    subgraph P3["Phase 3 — Clean"]
         D1[Exact + fuzzy dedupe]
-        D2[change_log — full JSON per merge/delete]
-        D3[Remap Tasks/Ops; review-scan → manual_review]
+        D2[change_log<br/>full JSON merge/delete]
+        D3[Remap Tasks/Ops<br/>review-scan]
         D1 --> D2 --> D3
     end
     SF --> E1
@@ -64,16 +64,16 @@ flowchart TB
 ### Chart 2 — Free enrichment → target gate
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
+%%{init: {'theme': 'neutral', 'flowchart': {'nodeSpacing': 50, 'rankSpacing': 62, 'padding': 22}}}%%
 flowchart TB
-    subgraph P4[Phase 4 — Free enrichment]
-        F1[link-unscored — pair hints]
+    subgraph P4["Phase 4<br/>Free enrichment"]
+        F1[link-unscored<br/>pair hints]
         F2[Prospect / Lead backfill]
-        F3[EPP scan — Orders / phone]
+        F3[EPP scan<br/>Orders / phone]
         F1 --> F2 --> F3
     end
-    subgraph P5[Phase 5 — Target filter]
-        T1[Keep target accounts + titles only]
+    subgraph P5["Phase 5<br/>Target filter"]
+        T1[Target accounts<br/>+ titles only]
     end
     F3 --> T1
 ```
@@ -81,19 +81,19 @@ flowchart TB
 ### Chart 3 — Review surfaces → true enrichment
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
+%%{init: {'theme': 'neutral', 'flowchart': {'nodeSpacing': 50, 'rankSpacing': 62, 'padding': 22}}}%%
 flowchart TB
-    T0[Phase 5 done — gated cohort]
-    subgraph P6[Phase 6 — Review in parallel]
-        R1[Dashboard: pull_examples + KPIs + samples]
-        R2[Visualiser: bundle → DuckDB — split view / search]
+    T0["After Phase 5<br/>gated cohort"]
+    subgraph P6["Phase 6<br/>Review (parallel)"]
+        R1["Dashboard<br/>KPIs · samples"]
+        R2["Visualiser<br/>DuckDB · search"]
     end
-    subgraph P7[Phase 7 — True enrichment]
-        V1[Prioritise: stale + target fit + signals]
+    subgraph P7["Phase 7<br/>True enrichment"]
+        V1[Prioritise stale + fit]
         V2[Role check]
-        V3{Silver+ and still in role?}
-        V4[Skip further enrichment]
-        V5[Queue paid / ops enrichment]
+        V3{"Silver+ and<br/>still in role?"}
+        V4[Skip enrichment]
+        V5[Paid / ops queue]
         V1 --> V2 --> V3
         V3 -->|yes| V4
         V3 -->|no| V5
