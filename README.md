@@ -28,7 +28,14 @@ That copies the print HTML → `index.html`, syncs Markdown + screenshots, then 
 
 ## GitHub Pages (optional backup URL)
 
-This repo includes **`.github/workflows/deploy-github-pages.yml`**. After you enable **Settings → Pages → Source: GitHub Actions**, each push to `main` publishes to **`https://bwebstergds.github.io/E2ESpec/`** (exact URL shown in the workflow run and Pages settings).
+This repo includes **`.github/workflows/deploy-github-pages.yml`** (aligned with [GitHub’s static Pages starter](https://github.com/actions/starter-workflows/blob/main/pages/static.yml)).
+
+1. **Settings → Pages → Build and deployment → Source:** choose **GitHub Actions** (not “Deploy from a branch”) and save.
+2. Push to `main` or run the workflow manually (**Actions → Deploy static content to Pages → Run workflow**).
+
+The site URL appears under **Pages** and in the workflow summary (often `https://bwebstergds.github.io/E2ESpec/`).
+
+**If the workflow failed before:** the earlier YAML was missing **`actions/configure-pages`**; that is fixed on `main`. If it still fails, open the failed job log — common causes are Pages not enabled yet, or the **`github-pages` environment** waiting for approval (**Settings → Environments**).
 
 ## Contents
 
