@@ -2,6 +2,20 @@
 
 Self-contained copy of the end-to-end spec for **hosting** or **sharing** without the rest of the Data Foundation repo.
 
+## Live site (Vercel) not updating?
+
+**Vercel deploys from this GitHub repo only** ([BWebsterGDS/E2ESpec](https://github.com/BWebsterGDS/E2ESpec)). If you change files under `docs/` in the **Data Foundation** project on disk, **the live site will not change** until those files are copied into this folder and **pushed to `main`**.
+
+**One command** (from the Data Foundation project root, with this folder present):
+
+```powershell
+powershell -File scripts\publish_e2e_spec.ps1
+```
+
+That copies `DELEGATE_DATA_INGESTION_E2E_print.html` → `index.html`, syncs the Markdown + screenshots, then **commits and pushes** if anything changed.
+
+**Check Vercel:** Project → **Settings → Git** → connected repo and **Production Branch** = `main`. **Deployments** should show a new build after each push. If Git is connected but nothing builds, use **Redeploy** on the latest deployment.
+
 ## Contents
 
 | File / folder | Role |
