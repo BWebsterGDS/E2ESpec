@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delegate Data Ingestion — End-to-End Flow</title>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    /* Neutral theme: prints reliably (no full-page black boxes from dark subgraph fills + PDF engines). */
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "neutral",
+      themeVariables: {
+        fontSize: "11px",
+        fontFamily: "Segoe UI, system-ui, sans-serif",
+      },
+      /* Generous spacing avoids subgraph titles / nodes overlapping (Vercel + narrow viewports). */
+      flowchart: {
+        curve: "linear",
+        padding: 22,
+        nodeSpacing: 50,
+        rankSpacing: 62,
+        htmlLabels: true,
+      },
+    });
+    await mermaid.run({ querySelector: ".mermaid" });
+  </script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --text: #e1e4e8;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --border: #21262d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin-top: 2rem;
+      color: #f0f3f6;
+    }
+    h3 { font-size: 1.05rem; margin-top: 1.5rem; color: #c9d1d9; }
+    p { margin: 0.75rem 0; }
+    .purpose {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .purpose strong { color: var(--accent); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+    }
+    th { background: var(--card); color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .mermaid {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      padding: 1rem 1rem 1.25rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+    .mermaid svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    figure {
+      margin: 1.5rem 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+    }
+    figure img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      display: block;
+    }
+    figcaption {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+    }
+    .safeguard table { font-size: 0.85rem; }
+    .print-hint {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(180deg, #0d1117 85%, transparent);
+      padding: 0.5rem 0 1rem;
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .print-hint inner { display: block; }
+    code { background: #21262d; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; }
+    pre.flow {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      color: #79c0ff;
+    }
+    ul { padding-left: 1.25rem; }
+    li { margin: 0.35rem 0; }
+
+    /* Screen: keep diagram scrollable; vertical room reduces clipped subgraph titles */
+    .mermaid-wrap { overflow-x: auto; overflow-y: visible; margin: 1.5rem 0; padding-top: 0.35rem; }
+    /* Flat charts (no subgraphs): extra top padding so first nodes clear the card edge */
+    .mermaid-wrap.mermaid-chart-flat { padding-top: 0.75rem; }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 14mm 12mm 16mm 12mm;
+      }
+      html {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      html, body {
+        overflow: visible !important;
+        height: auto !important;
+      }
+      body {
+        background: #fff !important;
+        color: #111 !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      h1, h2, h3 { color: #111 !important; }
+      .print-hint { display: none !important; }
+
+      /* Do NOT use break-inside:avoid on huge blocks (Mermaid SVG, tall screenshots) — that causes blank pages. */
+      .purpose {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      table {
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+      thead {
+        display: table-header-group;
+      }
+      figure {
+        break-inside: auto;
+        page-break-inside: auto;
+        margin: 0.75rem 0;
+      }
+      figure img {
+        max-width: 100% !important;
+        max-height: 240mm;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain;
+        page-break-inside: avoid;
+      }
+      pre.flow {
+        break-inside: auto;
+        page-break-inside: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /* Mermaid: neutral SVG — no zoom (zoom caused black/empty page glitches in Chrome PDF). */
+      .mermaid-wrap {
+        overflow: visible !important;
+        max-width: 100%;
+        page-break-inside: auto;
+        break-inside: auto;
+        margin: 0.5rem 0 1rem 0;
+      }
+      .mermaid {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        padding: 0.5rem !important;
+      }
+      .mermaid svg {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+      }
+
+      th { background: #f0f0f0 !important; color: #333 !important; }
+      td, th { border-color: #ccc !important; }
+
+      h2 {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      h3 {
+        page-break-after: avoid;
+      }
+      p, li {
+        orphans: 3;
+        widows: 3;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-hint">
+    <strong>Save as PDF:</strong> Scroll down and <strong>wait until all three flowcharts are visible</strong>, then Ctrl+P → “Save as PDF” → <strong>Background graphics: On</strong>. If a chart is missing, refresh and wait before printing.
+  </div>
+
+  <h1>Delegate Data Ingestion — End-to-End Flow</h1>
+
+  <div class="purpose">
+    <strong>Purpose:</strong> How delegate contact data moves from Salesforce into a clean, enriched, analysis-ready state, and how we review it before final enrichment.
+  </div>
+
+  <h2>What this system does</h2>
+  <p>
+    We take raw delegate contact data from Salesforce — including related records such as tasks, opportunities, and orders — and run it through an automated pipeline that classifies, cleans, deduplicates, <strong>free-enriches</strong>, <strong>target-filters</strong>, and surfaces data in dashboards and the <strong>Delegate visualiser</strong>. A final <strong>true enrichment</strong> phase prioritises contacts using dashboard signals, recency, and target-list fit.
+  </p>
+
+  <h2>Classification groupings (active contacts)</h2>
+  <p>Typical <strong>active</strong> distribution (illustrative — use live dashboard counts for current numbers):</p>
+  <table>
+    <thead>
+      <tr><th>Tier</th><th class="num">Typical count</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Gold</strong></td><td class="num">1,418,369</td><td>Strong profiles — full identity and reachability</td></tr>
+      <tr><td><strong>Silver</strong></td><td class="num">229,621</td><td>Strong with minor gaps</td></tr>
+      <tr><td><strong>Bronze</strong></td><td class="num">93,972</td><td>Basic info; several fields missing — <em>weak band</em></td></tr>
+      <tr><td><strong>Name + Email</strong></td><td class="num">42,746</td><td>Minimal but often contactable — <em>weak band</em></td></tr>
+      <tr><td><strong>Unscored</strong></td><td class="num">572</td><td>Insufficient structured data — <em>weak band</em>; includes uncontactable stubs</td></tr>
+      <tr><td><strong>Total active</strong></td><td class="num"><strong>1,785,280</strong></td><td></td></tr>
+    </tbody>
+  </table>
+  <p>
+    <strong>Weak data</strong> = Bronze, Name+Email, and Unscored only. Within Unscored, <strong>572</strong> records (~<strong>0.03%</strong> of the active total) are effectively <strong>uncontactable</strong>.
+  </p>
+  <p>
+    <strong>Heuristic for junk / duplicate stubs:</strong> empty or fragmented rows (e.g. random email with almost no other data); if created <strong>seconds before/after</strong> another record where the <strong>lead name matches the email</strong> local-part, treat as duplicate, <strong>merge</strong>, and <strong>fill</strong> empty fields from the survivor.
+  </p>
+
+  <h2>End-to-end flow (detailed)</h2>
+  <p style="font-size:0.95rem;color:var(--muted);">The flow is split into <strong>three charts</strong> so PDF export does not overflow or glitch. Read 1 → 2 → 3. Dashboard and visualiser run in parallel after the target gate; both feed true enrichment.</p>
+
+  <h3 style="margin-top:1.25rem;font-size:1rem;">Chart 1 — Extract, classify, clean</h3>
+  <div class="mermaid-wrap">
+  <pre class="mermaid">
+flowchart TB
+    SF[(Salesforce<br/>read-only)]
+    subgraph P1["Phase 1 — Extract"]
+        E1[Bulk API jobs<br/>CSV stream]
+        E2[ingestion_rows<br/>JSONB]
+        E3[ingestion_batches]
+        E1 --> E2 --> E3
+    end
+    subgraph P2["Phase 2 — Classify"]
+        C1[Score + fingerprint<br/>tier tables]
+        C2[Rebuild contacts_working]
+        C1 --> C2
+    end
+    subgraph P3["Phase 3 — Clean"]
+        D1[Exact + fuzzy dedupe]
+        D2[change_log<br/>full JSON merge/delete]
+        D3[Remap Tasks/Ops<br/>review-scan]
+        D1 --> D2 --> D3
+    end
+    SF --> E1
+    E3 --> C1
+    C2 --> D1
+  </pre>
+  </div>
+
+  <h3 style="margin-top:1.25rem;font-size:1rem;">Chart 2 — Free enrichment → target gate</h3>
+  <div class="mermaid-wrap">
+  <pre class="mermaid">
+flowchart TB
+    F1[link-unscored<br/>pair hints]
+    F2[Prospect / Lead backfill]
+    F3[EPP scan<br/>Orders / phone]
+    T1[Target accounts<br/>+ titles only]
+    F1 --> F2 --> F3 --> T1
+  </pre>
+  </div>
+
+  <h3 style="margin-top:1.25rem;font-size:1rem;">Chart 3 — Review surfaces → true enrichment</h3>
+  <p style="font-size:0.88rem;color:var(--muted);margin:0 0 0.5rem 0;">Phases 6–7 labels are in the heading above; the diagram omits subgraph boxes so titles do not collide with arrows.</p>
+  <div class="mermaid-wrap mermaid-chart-flat">
+  <pre class="mermaid">
+flowchart TB
+    T0["After Phase 5<br/>gated cohort"]
+    R1["Dashboard<br/>KPIs · samples"]
+    R2["Visualiser<br/>DuckDB · search"]
+    V1[Prioritise stale + fit]
+    V2[Role check]
+    V3{"Silver+ and<br/>still in role?"}
+    V4[Skip enrichment]
+    V5[Paid / ops queue]
+    T0 --> R1
+    T0 --> R2
+    R1 --> V1
+    R2 --> V1
+    V1 --> V2 --> V3
+    V3 -->|yes| V4
+    V3 -->|no| V5
+  </pre>
+  </div>
+
+  <h2>Step highlights</h2>
+
+  <h3>1. Extract</h3>
+  <p>Full Bulk export of Contacts, Leads, Accounts, Campaigns, Events, Tasks, Opportunities, Orders into raw staging (JSON).</p>
+
+  <h3>2. Classify</h3>
+  <p>Score every contact and assign tiers; rebuild <code>contacts_working</code>.</p>
+
+  <h3>3. Clean</h3>
+  <p>Exact + fuzzy dedupe; manual review. <strong>Any merged or deleted row is logged with full fields in JSON</strong> — <strong>no data is unrecoverable</strong>.</p>
+
+  <h3>4. Free enrichment (3 passes)</h3>
+  <p>Fuzzy batch match → prospect/Lead backfill → EPP/Order signals. Included at no extra cost to the programme.</p>
+
+  <h3>5. Target list filtering</h3>
+  <p>Restrict to target accounts and titles so only in-spec delegates continue.</p>
+
+  <h3>6. Dashboard &amp; Delegate visualiser</h3>
+  <p>
+    <strong>Dashboard:</strong> KPIs, tier bar, tabbed samples — always example records; <strong>deleted</strong> and <strong>merged</strong> contacts remain scrollable with audit context.
+    <strong>Visualiser:</strong> in-depth search across Salesforce fields; <strong>split view</strong> to compare groups; current, deleted, and merged rows in the export bundle.
+  </p>
+
+  <figure>
+    <img src="assets/dashboard_data_quality.png" alt="Data Quality Dashboard showing KPIs, tier distribution, and dedup audit samples">
+    <figcaption>Data Quality Dashboard — tier distribution, pipeline KPIs, Tasks/Opps/Orders ingestion counts, and Dedup · Audit log samples.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="assets/delegate_visualiser_browse.png" alt="Delegate visualiser Browse data tab with tier filters and column picker">
+    <figcaption>Delegate visualiser — Browse data (DuckDB index); tier buttons, filters, visible columns, and paginated grid.</figcaption>
+  </figure>
+
+  <p>At this step, the <strong>groupings</strong> are the <strong>classification tiers</strong> (and dedupe outcomes) <strong>after</strong> target filtering — use the dashboard <strong>counts</strong> as the official split.</p>
+
+  <h3>7. True enrichment</h3>
+  <p>
+    Prioritise using dashboards and exports: e.g. contacted <strong>over ~10 months</strong> ago and matching target lists.
+    <strong>Role check:</strong> if still in role and tier is <strong>Silver+</strong>, enrichment is usually <strong>not</strong> required.
+  </p>
+
+  <h2>Key safeguards</h2>
+  <div class="safeguard">
+    <table>
+      <thead><tr><th>Safeguard</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Salesforce read-only</td><td>No write-back; exports are read-only.</td></tr>
+        <tr><td>Dry-run before apply</td><td>Mutable stages support preview.</td></tr>
+        <tr><td>Full audit trail</td><td>Merges/deletes/enrichments logged with context.</td></tr>
+        <tr><td>No unrecoverable deletes</td><td>Merged/deleted records logged with <strong>full JSON</strong>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Data flow summary</h2>
+  <pre class="flow">Salesforce → Raw staging → Classify → Clean &amp; dedupe (full audit)
+  → Free enrichment (3×) → Target list filtering
+  → Dashboard + Visualiser → True enrichment</pre>
+
+  <p style="margin-top:2rem;font-size:0.85rem;color:#8b949e;">
+    <em>Delegate Data Ingestion E2E — April 2026. Source Markdown: <code>DELEGATE_DATA_INGESTION_E2E.md</code></em>
+  </p>
+
+</body>
+</html>
