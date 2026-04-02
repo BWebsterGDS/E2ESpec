@@ -29,6 +29,7 @@ Mermaid loads from jsDelivr; no build step.
 ## Deploy (examples)
 
 - **Vercel:** Import the repo. If the repo root **is** this folder, use defaults (no framework, no build). If the repo is the **parent** monorepo, set **Root Directory** to `E2E Spec`.
+- **Vercel project name:** Must be **only lowercase** letters, digits, `.`, `_`, and `-` (max 100 chars). Repo names like `E2ESpec` are invalid — on the import screen, set **Project Name** to e.g. `e2e-spec` (this repo’s `vercel.json` sets `"name": "e2e-spec"` as a hint). Avoid spaces (e.g. parent folder `Data Foundation`).
 - **Netlify:** Same idea — publish directory = this folder (or monorepo subfolder `E2E Spec`).
 - **GitHub Pages:** Repo Settings → Pages → deploy from branch; ensure `index.html` is at the published root (works if this folder is the repo root).
 
