@@ -73,7 +73,7 @@ flowchart TB
     F1 --> F2 --> F3 --> T1
 ```
 
-*(No subgraph boxes — phase names stay in the section heading so they do not overlap edges.)*
+*(No subgraph boxes here — phase names stay in the section heading so they do not overlap edges.)*
 
 ### Chart 3 — Review surfaces → true enrichment
 
@@ -250,21 +250,25 @@ Salesforce (source)
 
 ## Generating the final PDF (full readability)
 
-**This standalone folder** (`E2E Spec/`) mirrors the main repo docs: use **`index.html`** for print/PDF (same content as `docs/DELEGATE_DATA_INGESTION_E2E_print.html` in the full project).
-
 **Deliverable file (what you share or archive):**
 
 | | |
 |---|---|
-| **In the full Data Foundation repo** | **`docs/DELEGATE_DATA_INGESTION_E2E.pdf`** (from `scripts/export_e2e_pdf.ps1` or browser print) |
-| **Source for print (this folder)** | **`index.html`** (dark theme, Mermaid, screenshots, print CSS) |
-| **Authoritative text** | **`DELEGATE_DATA_INGESTION_E2E.md`** (this file; use for GitHub and diffs) |
+| **Path** | **`docs/DELEGATE_DATA_INGESTION_E2E.pdf`** |
+| **Source for print** | **`docs/DELEGATE_DATA_INGESTION_E2E_print.html`** (dark theme, Mermaid, screenshots, print CSS) |
+| **Authoritative text** | **`docs/DELEGATE_DATA_INGESTION_E2E.md`** (Markdown; use for GitHub and diffs) |
 
-**Best quality (recommended):** open **`index.html`** in **Chrome** or **Edge** → **Ctrl+P** → **Save as PDF** → in **More settings** turn **Background graphics** **On** (required for diagram colours and screenshot fidelity). Use **A4** or **Letter** margins as needed; scale **100%**.
+**Best quality (recommended):** open **`docs/DELEGATE_DATA_INGESTION_E2E_print.html`** in **Chrome** or **Edge** → **Ctrl+P** → **Save as PDF** → in **More settings** turn **Background graphics** **On** (required for diagram colours and screenshot fidelity). Use **A4** or **Letter** margins as needed; scale **100%**.
 
-The print **HTML** uses **A4 `@page` margins** and avoids **`break-inside: avoid`** on huge blocks (that pattern was causing **blank pages**). Prefer **Chrome or Edge** for PDF export; **print preview** should show continuous pages with no large gaps.
+The print **HTML** uses **A4 `@page` margins**, **no `break-inside: avoid` on the large Mermaid block** (that pattern was causing **blank pages**), and a **print-only zoom** on the diagram so it fits typical pages. Prefer **Chrome or Edge** for PDF export; **print preview** should show continuous pages with no large gaps.
 
-**Automated PDF in the full repo only:** from the Data Foundation repo root run `powershell -File scripts\export_e2e_pdf.ps1` (writes `docs/DELEGATE_DATA_INGESTION_E2E.pdf`). If Mermaid appears blank in headless export, use **browser Save as PDF** on **`index.html`** so diagrams finish rendering before print.
+**Automated (regenerates the same filename):** from the repo root run:
+
+```powershell
+powershell -File scripts\export_e2e_pdf.ps1
+```
+
+That writes **`docs/DELEGATE_DATA_INGESTION_E2E.pdf`** via headless Chrome. If the Mermaid diagram appears blank, use the **browser Save as PDF** method above so diagrams finish rendering before print.
 
 ---
 
