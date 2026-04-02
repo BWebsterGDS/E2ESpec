@@ -13,6 +13,8 @@ Self-contained copy of the end-to-end spec for **hosting** or **sharing** withou
 
 Mermaid loads from jsDelivr; no build step.
 
+**Mermaid vs PNG:** GitHub and Vercel both run the same Mermaid JS — nothing is “wrong” with the push. Subgraph **titles** inside diagrams often overlap arrows (a Mermaid layout limitation). This site uses **flat** charts (no subgraph boxes) for charts 2–3 and puts phase names in the **page heading** instead. If you need **pixel-perfect** diagrams, export SVG/PNG from [mermaid.live](https://mermaid.live) (or `@mermaid-js/mermaid-cli`), add files under `assets/`, and swap the `<pre class="mermaid">` blocks for `<img>` tags — at the cost of harder edits.
+
 ## Push to Git
 
 1. Initialise a repo **in this folder** (or copy `E2E Spec` into an empty repo root):

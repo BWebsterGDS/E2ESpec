@@ -139,6 +139,8 @@
 
     /* Screen: keep diagram scrollable; vertical room reduces clipped subgraph titles */
     .mermaid-wrap { overflow-x: auto; overflow-y: visible; margin: 1.5rem 0; padding-top: 0.35rem; }
+    /* Flat charts (no subgraphs): extra top padding so first nodes clear the card edge */
+    .mermaid-wrap.mermaid-chart-flat { padding-top: 0.75rem; }
 
     @media print {
       @page {
@@ -309,42 +311,34 @@ flowchart TB
   <div class="mermaid-wrap">
   <pre class="mermaid">
 flowchart TB
-    subgraph P4["Phase 4<br/>Free enrichment"]
-        F1[link-unscored<br/>pair hints]
-        F2[Prospect / Lead backfill]
-        F3[EPP scan<br/>Orders / phone]
-        F1 --> F2 --> F3
-    end
-    subgraph P5["Phase 5<br/>Target filter"]
-        T1[Target accounts<br/>+ titles only]
-    end
-    F3 --> T1
+    F1[link-unscored<br/>pair hints]
+    F2[Prospect / Lead backfill]
+    F3[EPP scan<br/>Orders / phone]
+    T1[Target accounts<br/>+ titles only]
+    F1 --> F2 --> F3 --> T1
   </pre>
   </div>
 
   <h3 style="margin-top:1.25rem;font-size:1rem;">Chart 3 — Review surfaces → true enrichment</h3>
-  <div class="mermaid-wrap">
+  <p style="font-size:0.88rem;color:var(--muted);margin:0 0 0.5rem 0;">Phases 6–7 labels are in the heading above; the diagram omits subgraph boxes so titles do not collide with arrows.</p>
+  <div class="mermaid-wrap mermaid-chart-flat">
   <pre class="mermaid">
 flowchart TB
     T0["After Phase 5<br/>gated cohort"]
-    subgraph P6["Phase 6<br/>Review (parallel)"]
-        R1["Dashboard<br/>KPIs · samples"]
-        R2["Visualiser<br/>DuckDB · search"]
-    end
-    subgraph P7["Phase 7<br/>True enrichment"]
-        V1[Prioritise stale + fit]
-        V2[Role check]
-        V3{"Silver+ and<br/>still in role?"}
-        V4[Skip enrichment]
-        V5[Paid / ops queue]
-        V1 --> V2 --> V3
-        V3 -->|yes| V4
-        V3 -->|no| V5
-    end
+    R1["Dashboard<br/>KPIs · samples"]
+    R2["Visualiser<br/>DuckDB · search"]
+    V1[Prioritise stale + fit]
+    V2[Role check]
+    V3{"Silver+ and<br/>still in role?"}
+    V4[Skip enrichment]
+    V5[Paid / ops queue]
     T0 --> R1
     T0 --> R2
     R1 --> V1
     R2 --> V1
+    V1 --> V2 --> V3
+    V3 -->|yes| V4
+    V3 -->|no| V5
   </pre>
   </div>
 

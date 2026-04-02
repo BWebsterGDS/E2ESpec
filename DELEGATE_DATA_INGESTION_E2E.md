@@ -66,42 +66,37 @@ flowchart TB
 ```mermaid
 %%{init: {'theme': 'neutral', 'flowchart': {'nodeSpacing': 50, 'rankSpacing': 62, 'padding': 22}}}%%
 flowchart TB
-    subgraph P4["Phase 4<br/>Free enrichment"]
-        F1[link-unscored<br/>pair hints]
-        F2[Prospect / Lead backfill]
-        F3[EPP scan<br/>Orders / phone]
-        F1 --> F2 --> F3
-    end
-    subgraph P5["Phase 5<br/>Target filter"]
-        T1[Target accounts<br/>+ titles only]
-    end
-    F3 --> T1
+    F1[link-unscored<br/>pair hints]
+    F2[Prospect / Lead backfill]
+    F3[EPP scan<br/>Orders / phone]
+    T1[Target accounts<br/>+ titles only]
+    F1 --> F2 --> F3 --> T1
 ```
 
+*(No subgraph boxes — phase names stay in the section heading so they do not overlap edges.)*
+
 ### Chart 3 — Review surfaces → true enrichment
+
+Phases 6–7 are named in this heading; the diagram avoids subgraph boxes so titles do not collide with arrows.
 
 ```mermaid
 %%{init: {'theme': 'neutral', 'flowchart': {'nodeSpacing': 50, 'rankSpacing': 62, 'padding': 22}}}%%
 flowchart TB
     T0["After Phase 5<br/>gated cohort"]
-    subgraph P6["Phase 6<br/>Review (parallel)"]
-        R1["Dashboard<br/>KPIs · samples"]
-        R2["Visualiser<br/>DuckDB · search"]
-    end
-    subgraph P7["Phase 7<br/>True enrichment"]
-        V1[Prioritise stale + fit]
-        V2[Role check]
-        V3{"Silver+ and<br/>still in role?"}
-        V4[Skip enrichment]
-        V5[Paid / ops queue]
-        V1 --> V2 --> V3
-        V3 -->|yes| V4
-        V3 -->|no| V5
-    end
+    R1["Dashboard<br/>KPIs · samples"]
+    R2["Visualiser<br/>DuckDB · search"]
+    V1[Prioritise stale + fit]
+    V2[Role check]
+    V3{"Silver+ and<br/>still in role?"}
+    V4[Skip enrichment]
+    V5[Paid / ops queue]
     T0 --> R1
     T0 --> R2
     R1 --> V1
     R2 --> V1
+    V1 --> V2 --> V3
+    V3 -->|yes| V4
+    V3 -->|no| V5
 ```
 
 **How to read:** after **target filtering**, the **dashboard** and **visualiser** paths run **in parallel**; both inform **true enrichment** (same prioritisation rules: cohort after the gate, recency, role, tier).
