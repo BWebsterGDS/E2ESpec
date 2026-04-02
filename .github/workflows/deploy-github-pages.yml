@@ -1,5 +1,5 @@
-# Matches GitHub starter: actions/starter-workflows/pages/static.yml
-# First run: Repo → Settings → Pages → Source: GitHub Actions, then save.
+# deploy-pages expects the artifact from a *previous* job (not same job as upload).
+# https://github.com/actions/deploy-pages#usage
 name: Deploy static content to Pages
 
 on:
@@ -17,10 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,6 +31,13 @@ jobs:
         with:
           path: "."
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
