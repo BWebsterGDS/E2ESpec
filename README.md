@@ -2,19 +2,33 @@
 
 Self-contained copy of the end-to-end spec for **hosting** or **sharing** without the rest of the Data Foundation repo.
 
-## Live site (Vercel) not updating?
+## First-time Vercel (if the dashboard is empty)
 
-**Vercel deploys from this GitHub repo only** ([BWebsterGDS/E2ESpec](https://github.com/BWebsterGDS/E2ESpec)). If you change files under `docs/` in the **Data Foundation** project on disk, **the live site will not change** until those files are copied into this folder and **pushed to `main`**.
+**Pushes to GitHub do not create a Vercel project by themselves.** You must connect the repo once:
 
-**One command** (from the Data Foundation project root, with this folder present):
+1. Open **[vercel.com/new](https://vercel.com/new)** (sign in with GitHub).
+2. **Import** → choose **`BWebsterGDS/E2ESpec`** → **Import**.
+3. **Project name:** `e2e-spec` (lowercase only).
+4. **Framework:** Other · **Root directory:** `.` · **Build** / **Output** can stay empty (static `index.html`).
+5. Click **Deploy**. After that, every **`git push` to `main`** will show up under **Deployments**.
+
+If the project already exists: **Settings → Git** → confirm repository **E2ESpec** and production branch **`main`**. Use **Deployments → … → Redeploy** if a webhook was missed.
+
+## Live site updates from the Data Foundation project
+
+**Vercel only builds what is in this GitHub repo** ([BWebsterGDS/E2ESpec](https://github.com/BWebsterGDS/E2ESpec)). Edits under `docs/` in Data Foundation are **not** deployed until you sync into `E2E Spec/` and push.
+
+From the Data Foundation project root:
 
 ```powershell
 powershell -File scripts\publish_e2e_spec.ps1
 ```
 
-That copies `DELEGATE_DATA_INGESTION_E2E_print.html` → `index.html`, syncs the Markdown + screenshots, then **commits and pushes** if anything changed.
+That copies the print HTML → `index.html`, syncs Markdown + screenshots, then **commits and pushes** when there are changes.
 
-**Check Vercel:** Project → **Settings → Git** → connected repo and **Production Branch** = `main`. **Deployments** should show a new build after each push. If Git is connected but nothing builds, use **Redeploy** on the latest deployment.
+## GitHub Pages (optional backup URL)
+
+This repo includes **`.github/workflows/deploy-github-pages.yml`**. After you enable **Settings → Pages → Source: GitHub Actions**, each push to `main` publishes to **`https://bwebstergds.github.io/E2ESpec/`** (exact URL shown in the workflow run and Pages settings).
 
 ## Contents
 
