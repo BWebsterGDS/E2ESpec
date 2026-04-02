@@ -1,6 +1,6 @@
-# deploy-pages expects the artifact from a *previous* job (not same job as upload).
-# https://github.com/actions/deploy-pages#usage
-name: Deploy static content to Pages
+# Publishes static files to the gh-pages branch (reliable; avoids deploy-pages artifact API).
+# After first success: Repo → Settings → Pages → Build: Deploy from branch → gh-pages / (root)
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -8,36 +8,30 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp index.html vercel.json _site/
+          cp DELEGATE_DATA_INGESTION_E2E.md _site/
+          if [ -d assets ]; then cp -r assets _site/; fi
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Push to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: "."
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
+          publish_branch: gh-pages
+          force_orphan: true

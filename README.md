@@ -28,14 +28,13 @@ That copies the print HTML → `index.html`, syncs Markdown + screenshots, then 
 
 ## GitHub Pages (optional backup URL)
 
-This repo includes **`.github/workflows/deploy-github-pages.yml`** (aligned with [GitHub’s static Pages starter](https://github.com/actions/starter-workflows/blob/main/pages/static.yml)).
+The workflow uses **[peaceiris/actions-gh-pages](https://github.com/peaceiris/actions-gh-pages)** to push a small static folder to the **`gh-pages`** branch (avoids the `deploy-pages` / artifact API that often fails).
 
-1. **Settings → Pages → Build and deployment → Source:** choose **GitHub Actions** (not “Deploy from a branch”) and save.
-2. Push to `main` or run the workflow manually (**Actions → Deploy static content to Pages → Run workflow**).
+1. Push to `main` (or **Actions → Deploy to GitHub Pages → Run workflow**).
+2. **One-time:** **Settings → Pages → Build and deployment → Source:** **Deploy from a branch** (`gh-pages` was not in the old “GitHub Actions” flow).
+3. Set **Branch** = **`gh-pages`**, folder = **`/ (root)`**, Save.
 
-The site URL appears under **Pages** and in the workflow summary (often `https://bwebstergds.github.io/E2ESpec/`).
-
-**If deployments failed:** `actions/deploy-pages` must run in a **separate job** after `upload-pages-artifact` (not in the same job). The workflow on `main` uses **`build`** then **`deploy`**. Also ensure **Settings → Pages → Source: GitHub Actions**. If a run is stuck, check **Settings → Environments → github-pages** for required reviewers.
+The live URL is shown on the Pages settings page (often **`https://bwebstergds.github.io/E2ESpec/`**). If you previously had **Source: GitHub Actions**, switch to **Deploy from a branch** as above.
 
 ## Contents
 
@@ -68,7 +67,7 @@ Mermaid loads from jsDelivr; no build step.
 - **Vercel:** Import the repo. If the repo root **is** this folder, use defaults (no framework, no build). If the repo is the **parent** monorepo, set **Root Directory** to `E2E Spec`.
 - **Vercel project name:** Must be **only lowercase** letters, digits, `.`, `_`, and `-` (max 100 chars). Repo names like `E2ESpec` are invalid — on the import screen, set **Project Name** to e.g. `e2e-spec` (this repo’s `vercel.json` sets `"name": "e2e-spec"` as a hint). Avoid spaces (e.g. parent folder `Data Foundation`).
 - **Netlify:** Same idea — publish directory = this folder (or monorepo subfolder `E2E Spec`).
-- **GitHub Pages:** Repo Settings → Pages → deploy from branch; ensure `index.html` is at the published root (works if this folder is the repo root).
+- **GitHub Pages:** Workflow publishes to branch **`gh-pages`** → Settings → Pages → **Deploy from branch** → **`gh-pages`** / **(root)**.
 
 ## Syncing from the main project
 
