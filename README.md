@@ -35,7 +35,7 @@ This repo includes **`.github/workflows/deploy-github-pages.yml`** (aligned with
 
 The site URL appears under **Pages** and in the workflow summary (often `https://bwebstergds.github.io/E2ESpec/`).
 
-**If the workflow failed before:** the earlier YAML was missing **`actions/configure-pages`**; that is fixed on `main`. If it still fails, open the failed job log — common causes are Pages not enabled yet, or the **`github-pages` environment** waiting for approval (**Settings → Environments**).
+**If deployments failed:** `actions/deploy-pages` must run in a **separate job** after `upload-pages-artifact` (not in the same job). The workflow on `main` uses **`build`** then **`deploy`**. Also ensure **Settings → Pages → Source: GitHub Actions**. If a run is stuck, check **Settings → Environments → github-pages** for required reviewers.
 
 ## Contents
 
